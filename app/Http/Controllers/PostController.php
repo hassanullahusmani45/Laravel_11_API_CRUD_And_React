@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use GuzzleHttp\Psr7\Request;
 
 class PostController extends Controller
 {
@@ -13,23 +14,19 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
+        $posts = Post::all();
+        return $posts;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(StorePostRequest $request)
     {
-        //
+        $validatorsDatas = $request->validated();
+        Post::create($validatorsDatas);
+        return response(["message" => "The post is created successfully"]);
     }
 
     /**
@@ -37,23 +34,20 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        //
+        return response()->json($post);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Post $post)
-    {
-        //
-    }
+
+
 
     /**
      * Update the specified resource in storage.
      */
     public function update(UpdatePostRequest $request, Post $post)
     {
-        //
+        $validatorsDatas = $request->validated();
+        $post->update($validatorsDatas);
+        return $post;
     }
 
     /**
@@ -61,6 +55,7 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        //
+        $post->delete();
+        return response(['message',"the post is successfully deleted"]);
     }
 }
