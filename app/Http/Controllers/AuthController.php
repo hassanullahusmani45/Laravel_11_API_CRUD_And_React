@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
+use function Laravel\Prompts\error;
 
 class AuthController extends Controller
 {
@@ -42,7 +43,7 @@ class AuthController extends Controller
         } elseif (!Hash::check($request->password, $user->password)) {
             return ["error" => "The password is not mutch try agin."];
         } else {
-            $token = $user->createToken($request->name);
+            $token = $user->createToken($user->name);
             return [
                 "user_api_token" => $token->plainTextToken,
                 "user" => $user
@@ -52,8 +53,13 @@ class AuthController extends Controller
 
 
 
-    public function logout()
+    public function logout(Request $request)
     {
-        return "logout";
+        try {
+            $request->user()->tokens()->delete();
+            return ["message" => "you are logouted successfully!"];
+        } catch (\Exception $error) {
+            return ["error" => "the tonken is incorect!"];
+        }
     }
 }
