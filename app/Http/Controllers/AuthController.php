@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
-use function Laravel\Prompts\error;
-use function Pest\Laravel\json;
 
 class AuthController extends Controller
 {
@@ -30,7 +28,27 @@ class AuthController extends Controller
     }
 
 
-    public function login() {}
+    public function login(Request $request)
+    {
+        $validatedData = $request->validate([
+            "email" => "required|email|min:3|max:255",
+            "password" => "required|min:5|max:10"
+        ]);
+
+        $user = User::where("email", $validatedData["email"])->first();
+
+        if (!$user) {
+            return ["error" => "The email is incorrect."];
+        } elseif (!Hash::check($request->password, $user->password)) {
+            return ["error" => "The password is not mutch try agin."];
+        } else {
+            $token = $user->createToken($request->name);
+            return [
+                "user_api_token" => $token->plainTextToken,
+                "user" => $user
+            ];
+        }
+    }
 
 
 
