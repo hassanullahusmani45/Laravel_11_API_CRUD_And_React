@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
-use GuzzleHttp\Psr7\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
@@ -25,7 +25,7 @@ class PostController extends Controller
     public function store(StorePostRequest $request)
     {
         $validatorsDatas = $request->validated();
-        Post::create($validatorsDatas);
+        $request->user()->posts()->create($validatorsDatas);
         return response(["message" => "The post is created successfully"]);
     }
 
@@ -45,6 +45,10 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, Post $post)
     {
+        if ($request->user()->id !== $post->user_id) {
+            return response()->json(['message' => 'Unauthorized: you are not the owner of this post!'], 403);
+        }
+
         $validatorsDatas = $request->validated();
         $post->update($validatorsDatas);
         return $post;
@@ -55,7 +59,10 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        if (Auth::user()->id !== $post->user_id) {
+            return response()->json(['message' => 'Unauthorized: You are not the owner of this post!'], 403);
+        }
         $post->delete();
-        return response(['message',"the post is successfully deleted"]);
+        return response(['message', "the post is successfully deleted"]);
     }
 }
