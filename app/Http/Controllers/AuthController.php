@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\PersonalAccessToken;
 
 use function Laravel\Prompts\error;
 
@@ -55,11 +56,21 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        try {
-            $request->user()->tokens()->delete();
-            return ["message" => "you are logouted successfully!"];
-        } catch (\Exception $error) {
-            return ["error" => "the tonken is incorect!"];
+
+        $token = $request->token;
+        $accessToken = PersonalAccessToken::findToken($token);
+
+        if (!$accessToken) {
+            return response()->json([
+                'status' => 'error',
+                "error" => "the tonken is incorect!",
+            ]);
+        } else {
+            $accessToken->delete();
+            return response()->json([
+                'status' => 'success',
+                "message" => "you are logouted successfully!",
+            ]);
         }
     }
 }
